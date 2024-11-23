@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"suggest/internal/config"
+	"github.com/tedfulk/suggest/internal/config"
 
 	"github.com/spf13/cobra"
 )

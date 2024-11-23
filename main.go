@@ -1,6 +1,6 @@
 package main
 
-import "suggest/cmd"
+import "github.com/tedfulk/suggest/cmd"
 
 func main() {
 	cmd.Execute()

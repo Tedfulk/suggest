@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"suggest/internal/config"
+	"github.com/tedfulk/suggest/internal/config"
 	"text/template"
 
-	"suggest/internal/utils"
+	"github.com/tedfulk/suggest/internal/utils"
 
 	"github.com/fatih/color"
 	"github.com/manifoldco/promptui"

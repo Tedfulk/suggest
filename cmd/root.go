@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 	"strings"
-	"suggest/internal/api"
-	"suggest/internal/config"
+	"github.com/tedfulk/suggest/internal/api"
+	"github.com/tedfulk/suggest/internal/config"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"

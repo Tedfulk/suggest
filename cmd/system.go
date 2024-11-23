@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"suggest/internal/config"
-	"suggest/internal/utils"
+	"github.com/tedfulk/suggest/internal/config"
+	"github.com/tedfulk/suggest/internal/utils"
 	"text/template"
 
 	"github.com/fatih/color"

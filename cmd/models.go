@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"suggest/internal/config"
+	"github.com/tedfulk/suggest/internal/config"
 
 	"github.com/spf13/cobra"
 )
