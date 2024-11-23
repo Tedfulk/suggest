@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"strings"
-	"suggest/internal/config"
+	"github.com/tedfulk/suggest/internal/config"
 	"text/template"
 
 	"github.com/fatih/color"
