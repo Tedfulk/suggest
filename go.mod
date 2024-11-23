@@ -1,4 +1,4 @@
-module suggest
+module github.com/tedfulk/suggest
 
 go 1.23.3
 
