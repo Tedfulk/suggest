@@ -1,0 +1,155 @@
+.TH SUGGEST 1 "April 2024" "suggest 1.0" "User Commands"
+
+.SH NAME
+suggest \- AI-powered command-line assistant
+
+.SH SYNOPSIS
+.B suggest
+[\fB\-m\fR \fImodel\fR]
+[\fB\-t\fR \fItemplate\fR]
+[\fB\-s\fR \fIsystem-prompt\fR]
+[\fB\-h\fR]
+[\fIcommand\fR]
+[\fItext\fR]
+
+.SH DESCRIPTION
+.B suggest
+is a command-line tool that provides AI-powered assistance using various language models. It supports multiple AI providers, template management, and customizable system prompts.
+
+.SH COMMANDS
+.TP
+.B suggest model
+Interactively select a model to use
+.TP
+.B suggest models [\-\-update]
+List or update available models
+.TP
+.B suggest system
+Manage system prompts
+.TP
+.B suggest template
+Manage message templates
+.TP
+.B suggest keys
+Manage API keys for providers
+.TP
+.B suggest alias
+Manage model aliases
+
+.SH SYSTEM COMMANDS
+.TP
+.B suggest system add [title] [prompt]
+Add a new system prompt
+.TP
+.B suggest system remove [title]
+Remove a system prompt
+.TP
+.B suggest system list
+List all system prompts
+.TP
+.B suggest system select [title]
+Interactively select a system prompt
+
+.SH TEMPLATE COMMANDS
+.TP
+.B suggest template add [title] [template]
+Add a new template
+.TP
+.B suggest template remove [title]
+Remove a template
+.TP
+.B suggest template list
+List all templates
+.TP
+.B suggest template select [title] [\-\-vars key=value,...]
+Select and use a template
+
+.SH KEY MANAGEMENT
+.TP
+.B suggest keys openai
+Set OpenAI API key
+.TP
+.B suggest keys groq
+Set Groq API key
+.TP
+.B suggest keys
+Show current keys (masked)
+
+.SH ALIAS MANAGEMENT
+.TP
+.B suggest alias add [alias] [model]
+Add a model alias
+.TP
+.B suggest alias remove [alias]
+Remove a model alias
+.TP
+.B suggest alias list
+List all model aliases
+
+.SH OPTIONS
+.TP
+.B \-m, \-\-model
+Specify the model to use
+.TP
+.B \-t, \-\-template
+Use a template
+.TP
+.B \-s, \-\-system
+Use a specific system prompt
+.TP
+.B \-h, \-\-help
+Show help message
+
+.SH EXAMPLES
+.TP
+Basic usage:
+.B suggest "Write a Python function to sort a list"
+.TP
+Using a specific model:
+.B suggest \-m gpt-4 "Explain quantum computing"
+.TP
+Using a template:
+.B suggest template select code \-\-vars "language=Python,task=sort a list"
+.TP
+Setting up API keys:
+.B suggest keys openai
+.TP
+Managing system prompts:
+.B suggest system add "coding" "You are a helpful programming assistant"
+
+.SH CONFIGURATION
+Configuration is stored in ~/.suggest/config.yaml (Unix) or %APPDATA%/suggest/config.yaml (Windows).
+
+.SH PROVIDERS
+Currently supports:
+.TP
+.B OpenAI
+GPT-3.5, GPT-4, and other OpenAI models
+.TP
+.B Groq
+Mixtral and LLaMA models
+
+.SH FILES
+.TP
+.I ~/.suggest/config.yaml
+User configuration file
+
+.SH ENVIRONMENT
+.TP
+.B OPENAI_API_KEY
+Alternative way to set OpenAI API key
+.TP
+.B GROQ_API_KEY
+Alternative way to set Groq API key
+
+.SH BUGS
+Report bugs at: https://github.com/yourusername/suggest/issues
+
+.SH AUTHOR
+Your Name <your.email@example.com>
+
+.SH COPYRIGHT
+Copyright © 2024 Your Name. License MIT.
+
+.SH SEE ALSO
+Full documentation at: https://github.com/yourusername/suggest 
