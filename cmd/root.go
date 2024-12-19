@@ -3,9 +3,11 @@ package cmd
 import (
 	"fmt"
 	"strings"
+
 	"github.com/tedfulk/suggest/internal/api"
 	"github.com/tedfulk/suggest/internal/config"
 
+	"github.com/charmbracelet/glamour"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
@@ -166,8 +168,16 @@ Example:
 			client := api.NewOpenAIClient(cfg.OpenAIAPIKey)
 			resp, apiErr = client.CreateChatCompletion(req)
 		
+		case "gemini":
+			if cfg.GeminiAPIKey == "" {
+				fmt.Println("Gemini API key not set. Please set it in your config file.")
+				return
+			}
+			client := api.NewGeminiClient(cfg.GeminiAPIKey)
+			resp, apiErr = client.CreateChatCompletion(req)
+		
 		default:
-			fmt.Printf("Model '%s' not supported. Please use a Groq or OpenAI model.\n", model)
+			fmt.Printf("Model '%s' not supported. Please use a Groq, OpenAI, or Gemini model.\n", model)
 			return
 		}
 
@@ -177,7 +187,20 @@ Example:
 		}
 
 		if len(resp.Choices) > 0 {
-			fmt.Printf("%s\n", resp.Choices[0].Message.Content)
+			output := resp.Choices[0].Message.Content
+			
+			// Render markdown using Glamour
+			r, _ := glamour.NewTermRenderer(
+				glamour.WithAutoStyle(),
+				glamour.WithWordWrap(100),
+			)
+			doc, err := r.Render(output)
+			if err != nil {
+				fmt.Printf("Error rendering markdown: %v\n", err)
+				fmt.Println(output)
+				return
+			}
+			fmt.Print(doc)
 		}
 	},
 }

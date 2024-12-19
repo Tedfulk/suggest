@@ -2,9 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
 	"strings"
-	"github.com/tedfulk/suggest/internal/config"
 	"text/template"
+
+	"github.com/tedfulk/suggest/internal/config"
 
 	"github.com/fatih/color"
 	"github.com/manifoldco/promptui"
@@ -21,22 +23,69 @@ var selectModelCmd = &cobra.Command{
 			return
 		}
 
-		var allModels []string
+		// First, select the provider
+		providers := []string{}
 		if len(cfg.Models.OpenAI) > 0 {
-			allModels = append(allModels, cfg.Models.OpenAI...)
+			providers = append(providers, "OpenAI")
 		}
 		if len(cfg.Models.Groq) > 0 {
-			allModels = append(allModels, cfg.Models.Groq...)
+			providers = append(providers, "Groq")
+		}
+		if len(cfg.Models.Gemini) > 0 {
+			providers = append(providers, "Gemini")
 		}
 
-		if len(allModels) == 0 {
+		if len(providers) == 0 {
 			fmt.Println("No models available. Please set API keys and run 'suggest models --update'")
 			return
 		}
 
-		for alias, model := range cfg.ModelAliases {
-			allModels = append(allModels, fmt.Sprintf("%s (alias for %s)", alias, model))
+		providerPrompt := promptui.Select{
+			Label: "Select Provider",
+			Items: providers,
+			Templates: &promptui.SelectTemplates{
+				Label:    "{{ . }}",
+				Active:   "\U0001F449 {{ . | cyan }}", 
+				Inactive: "  {{ . | white }}",
+				Selected: "\U00002705 {{ . | green }}", 
+			},
 		}
+
+		_, provider, err := providerPrompt.Run()
+		if err != nil {
+			fmt.Printf("Prompt failed %v\n", err)
+			return
+		}
+
+		// Then, select the model based on the provider
+		var modelList []string
+		switch provider {
+		case "OpenAI":
+			modelList = append(modelList, cfg.Models.OpenAI...)
+		case "Groq":
+			modelList = append(modelList, cfg.Models.Groq...)
+		case "Gemini":
+			modelList = append(modelList, cfg.Models.Gemini...)
+		}
+
+		// Sort the base model list
+		sort.Strings(modelList)
+
+		// Add aliases that match the selected provider
+		var aliasList []string
+		for alias, model := range cfg.ModelAliases {
+			isOpenAI := strings.HasPrefix(model, "gpt-")
+			isGroq := strings.HasPrefix(model, "mixtral-") || strings.HasPrefix(model, "llama-")
+			isGemini := strings.HasPrefix(model, "gemini-")
+			
+			if (provider == "OpenAI" && isOpenAI) ||
+				(provider == "Groq" && isGroq) ||
+				(provider == "Gemini" && isGemini) {
+				aliasList = append(aliasList, fmt.Sprintf("%s (alias for %s)", alias, model))
+			}
+		}
+		sort.Strings(aliasList)
+		modelList = append(modelList, aliasList...)
 
 		cyan := color.New(color.FgCyan).SprintFunc()
 		white := color.New(color.FgWhite).SprintFunc()
@@ -51,15 +100,15 @@ var selectModelCmd = &cobra.Command{
 			"faint":    faint,
 		}
 
-		prompt := promptui.Select{
+		modelPrompt := promptui.Select{
 			Label: "Select Model",
-			Items: allModels,
+			Items: modelList,
 			Size:  20,
 			Templates: &promptui.SelectTemplates{
 				Label:    "{{ . }}",
-				Active:   "\U0001F449 {{ . | cyan }}",  // 👉 pointer emoji
+				Active:   "\U0001F449 {{ . | cyan }}", 
 				Inactive: "  {{ . | white }}",
-				Selected: "\U00002705 {{ . | green }}",  // ✅ checkmark emoji
+				Selected: "\U00002705 {{ . | green }}", 
 				FuncMap:  funcMap,
 				Details: `
 {{ "Provider:" | faint }}	{{ if hasPrefix . "gpt-" }}OpenAI{{ else if or (hasPrefix . "mixtral-") (hasPrefix . "llama-") }}Groq{{ else }}Unknown{{ end }}
@@ -67,7 +116,7 @@ var selectModelCmd = &cobra.Command{
 			},
 		}
 
-		_, result, err := prompt.Run()
+		_, result, err := modelPrompt.Run()
 		if err != nil {
 			fmt.Printf("Prompt failed %v\n", err)
 			return

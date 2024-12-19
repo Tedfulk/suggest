@@ -25,7 +25,7 @@ cat ~/.suggest/config.yaml
 ### Use different models for different tasks
 
 ```bash
-suggest -m gpt-4 "Complex reasoning task"
+suggest "Complex reasoning task"
 suggest -m mixtral "Code generation task"
 ```
 
@@ -35,8 +35,10 @@ suggest -m mixtral "Code generation task"
 |---------|-------------|
 | `suggest keys openai sk-proj-...` | Set OpenAI API key directly |
 | `suggest keys groq gr-...` | Set Groq API key directly |
+| `suggest keys gemini gl-...` | Set Gemini API key directly |
 | `suggest keys openai` | Set OpenAI API key interactively |
 | `suggest keys groq` | Set Groq API key interactively |
+| `suggest keys gemini` | Set Gemini API key interactively |
 
 ### Model Management
 

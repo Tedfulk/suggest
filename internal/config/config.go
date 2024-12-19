@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -24,6 +25,7 @@ type Template struct {
 type Config struct {
 	OpenAIAPIKey   string            `yaml:"openai_api_key"`
 	GroqAPIKey     string            `yaml:"groq_api_key"`
+	GeminiAPIKey   string            `yaml:"gemini_api_key"`
 	SystemPrompt   string            `yaml:"system_prompt"`
 	SystemPrompts  []SystemPrompt    `yaml:"system_prompts"`
 	Model          string            `yaml:"model"`
@@ -35,6 +37,7 @@ type Config struct {
 type ModelsConfig struct {
 	OpenAI []string `yaml:"openai"`
 	Groq   []string `yaml:"groq"`
+	Gemini []string `yaml:"gemini"`
 }
 
 type ModelResponse struct {
@@ -48,6 +51,7 @@ type Provider string
 const (
 	ProviderOpenAI Provider = "openai"
 	ProviderGroq   Provider = "groq"
+	ProviderGemini Provider = "gemini"
 	ProviderAll    Provider = "all"
 )
 
@@ -57,7 +61,7 @@ func migrateConfig(cfg *Config) {
 	}
 
 	if cfg.ModelAliases == nil {
-		cfg.ModelAliases = make(map[string]string)
+			cfg.ModelAliases = make(map[string]string)
 	}
 
 	if cfg.SystemPrompts == nil {
@@ -82,6 +86,9 @@ func migrateConfig(cfg *Config) {
 	}
 	if cfg.Models.Groq == nil {
 		cfg.Models.Groq = []string{}
+	}
+	if cfg.Models.Gemini == nil {
+		cfg.Models.Gemini = []string{}
 	}
 
 	if cfg.Templates == nil {
@@ -117,6 +124,7 @@ func LoadConfig() (*Config, error) {
 				Models: ModelsConfig{
 					OpenAI: []string{},
 					Groq:   []string{},
+					Gemini: []string{},
 				},
 			}, nil
 		}
@@ -167,6 +175,46 @@ func UpdateModels(config *Config, provider Provider) error {
 			}
 			config.Models.Groq = groqModels
 		}
+	case ProviderGemini:
+		if config.GeminiAPIKey != "" {
+			url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models?key=%s", config.GeminiAPIKey)
+			resp, err := http.Get(url)
+			if err != nil {
+				return fmt.Errorf("error fetching Gemini models: %w", err)
+			}
+			defer resp.Body.Close()
+
+			if resp.StatusCode != http.StatusOK {
+				body, _ := io.ReadAll(resp.Body)
+				return fmt.Errorf("failed to fetch Gemini models: %s", string(body))
+			}
+
+			var geminiResp struct {
+				Models []struct {
+					Name         string   `json:"name"`
+					DisplayName  string   `json:"displayName"`
+					Description  string   `json:"description"`
+					SupportedGenerationMethods []string `json:"supportedGenerationMethods"`
+				} `json:"models"`
+			}
+
+			if err := json.NewDecoder(resp.Body).Decode(&geminiResp); err != nil {
+				return fmt.Errorf("error parsing Gemini models: %w", err)
+			}
+
+			var models []string
+			for _, model := range geminiResp.Models {
+				// Only add models that support chat/text generation
+				for _, method := range model.SupportedGenerationMethods {
+					if method == "generateContent" {
+						name := strings.TrimPrefix(model.Name, "models/")
+						models = append(models, name)
+						break
+					}
+				}
+			}
+			config.Models.Gemini = models
+		}
 	case ProviderAll:
 		if config.OpenAIAPIKey != "" {
 			openAIModels, err := fetchModels("https://api.openai.com/v1/models", config.OpenAIAPIKey)
@@ -181,6 +229,13 @@ func UpdateModels(config *Config, provider Provider) error {
 				return fmt.Errorf("error fetching Groq models: %w", err)
 			}
 			config.Models.Groq = groqModels
+		}
+		if config.GeminiAPIKey != "" {
+			geminiModels, err := fetchModels("https://api.gemini.com/v1/models", config.GeminiAPIKey)
+			if err != nil {
+				return fmt.Errorf("error fetching Gemini models: %w", err)
+			}
+			config.Models.Gemini = geminiModels
 		}
 	}
 
@@ -225,10 +280,14 @@ func DetermineModelProvider(model string, config *Config) string {
 			return "openai"
 		}
 	}
-
 	for _, m := range config.Models.Groq {
 		if m == model {
 			return "groq"
+		}
+	}
+	for _, m := range config.Models.Gemini {
+		if m == model {
+			return "gemini"
 		}
 	}
 
@@ -237,6 +296,9 @@ func DetermineModelProvider(model string, config *Config) string {
 	}
 	if strings.HasPrefix(model, "mixtral-") || strings.HasPrefix(model, "llama-") {
 		return "groq"
+	}
+	if strings.HasPrefix(model, "gemini-") {
+		return "gemini"
 	}
 
 	return ""

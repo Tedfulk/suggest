@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/tedfulk/suggest/internal/config"
 
 	"github.com/spf13/cobra"
@@ -26,13 +27,14 @@ func maskKey(key string) string {
 
 var keysCmd = &cobra.Command{
 	Use:   "keys [provider]",
-	Short: "Manage API keys for OpenAI and Groq",
-	Long: `Manage API keys for OpenAI and Groq services.
+	Short: "Manage API keys for OpenAI, Groq, and Gemini",
+	Long: `Manage API keys for various AI services.
 	
 Example:
   suggest keys openai     - Set OpenAI API key
   suggest keys groq       - Set Groq API key
-  suggest keys           - Show current keys`,
+  suggest keys gemini     - Set Gemini API key
+  suggest keys            - Show current keys`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg, err := config.LoadConfig()
 		if err != nil {
@@ -43,6 +45,7 @@ Example:
 		if len(args) == 0 {
 			fmt.Printf("OpenAI API key: %s\n", maskKey(cfg.OpenAIAPIKey))
 			fmt.Printf("Groq API key: %s\n", maskKey(cfg.GroqAPIKey))
+			fmt.Printf("Gemini API key: %s\n", maskKey(cfg.GeminiAPIKey))
 			return
 		}
 
@@ -90,8 +93,29 @@ Example:
 				fmt.Println("Models list updated")
 			}
 
+		case "gemini":
+			fmt.Print("Gemini API Key: ")
+			var key string
+			fmt.Scanln(&key)
+			if key != "" {
+				cfg.GeminiAPIKey = key
+				err = config.SaveConfig(cfg)
+				if err != nil {
+					fmt.Println("Error saving config:", err)
+					return
+				}
+				fmt.Println("Gemini API key updated")
+				fmt.Println("Updating available models...")
+				err = config.UpdateModels(cfg, config.ProviderGemini)
+				if err != nil {
+					fmt.Println("Error updating models:", err)
+					return
+				}
+				fmt.Println("Models list updated")
+			}
+
 		default:
-			fmt.Printf("Unknown provider '%s'. Use 'openai' or 'groq'\n", provider)
+			fmt.Printf("Unknown provider '%s'. Use 'openai', 'groq', or 'gemini'\n", provider)
 		}
 	},
 }
