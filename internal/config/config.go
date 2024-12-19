@@ -191,9 +191,7 @@ func UpdateModels(config *Config, provider Provider) error {
 
 			var geminiResp struct {
 				Models []struct {
-					Name         string   `json:"name"`
-					DisplayName  string   `json:"displayName"`
-					Description  string   `json:"description"`
+					Name                      string   `json:"name"`
 					SupportedGenerationMethods []string `json:"supportedGenerationMethods"`
 				} `json:"models"`
 			}
@@ -204,7 +202,6 @@ func UpdateModels(config *Config, provider Provider) error {
 
 			var models []string
 			for _, model := range geminiResp.Models {
-				// Only add models that support chat/text generation
 				for _, method := range model.SupportedGenerationMethods {
 					if method == "generateContent" {
 						name := strings.TrimPrefix(model.Name, "models/")
@@ -231,11 +228,40 @@ func UpdateModels(config *Config, provider Provider) error {
 			config.Models.Groq = groqModels
 		}
 		if config.GeminiAPIKey != "" {
-			geminiModels, err := fetchModels("https://api.gemini.com/v1/models", config.GeminiAPIKey)
+			url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models?key=%s", config.GeminiAPIKey)
+			resp, err := http.Get(url)
 			if err != nil {
 				return fmt.Errorf("error fetching Gemini models: %w", err)
 			}
-			config.Models.Gemini = geminiModels
+			defer resp.Body.Close()
+
+			if resp.StatusCode != http.StatusOK {
+				body, _ := io.ReadAll(resp.Body)
+				return fmt.Errorf("failed to fetch Gemini models: %s", string(body))
+			}
+
+			var geminiResp struct {
+				Models []struct {
+					Name                      string   `json:"name"`
+					SupportedGenerationMethods []string `json:"supportedGenerationMethods"`
+				} `json:"models"`
+			}
+
+			if err := json.NewDecoder(resp.Body).Decode(&geminiResp); err != nil {
+				return fmt.Errorf("error parsing Gemini models: %w", err)
+			}
+
+			var models []string
+			for _, model := range geminiResp.Models {
+				for _, method := range model.SupportedGenerationMethods {
+					if method == "generateContent" {
+						name := strings.TrimPrefix(model.Name, "models/")
+						models = append(models, name)
+						break
+					}
+				}
+			}
+			config.Models.Gemini = models
 		}
 	}
 

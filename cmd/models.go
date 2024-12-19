@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/tedfulk/suggest/internal/config"
 
 	"github.com/spf13/cobra"
@@ -18,7 +19,7 @@ var modelsCmd = &cobra.Command{
 		}
 
 		update, _ := cmd.Flags().GetBool("update")
-		if update || len(cfg.Models.OpenAI) == 0 && len(cfg.Models.Groq) == 0 {
+		if update || len(cfg.Models.OpenAI) == 0 && len(cfg.Models.Groq) == 0 && len(cfg.Models.Gemini) == 0 {
 			fmt.Println("Updating models list...")
 			err = config.UpdateModels(cfg, config.ProviderAll)
 			if err != nil {
@@ -32,20 +33,32 @@ var modelsCmd = &cobra.Command{
 			}
 		}
 
-		if len(cfg.Models.OpenAI) == 0 && len(cfg.Models.Groq) == 0 {
+		if len(cfg.Models.OpenAI) == 0 && len(cfg.Models.Groq) == 0 && len(cfg.Models.Gemini) == 0 {
 			fmt.Println("No models available. Please set an API key and run 'suggest models --update'")
 			return
 		}
 
 		fmt.Println("Available models:")
-		fmt.Println("\nOpenAI models:")
-		for _, model := range cfg.Models.OpenAI {
-			printModelWithAliases(model, cfg.ModelAliases)
+		
+		if len(cfg.Models.OpenAI) > 0 {
+			fmt.Println("\nOpenAI models:")
+			for _, model := range cfg.Models.OpenAI {
+				printModelWithAliases(model, cfg.ModelAliases)
+			}
 		}
 
-		fmt.Println("\nGroq models:")
-		for _, model := range cfg.Models.Groq {
-			printModelWithAliases(model, cfg.ModelAliases)
+		if len(cfg.Models.Groq) > 0 {
+			fmt.Println("\nGroq models:")
+			for _, model := range cfg.Models.Groq {
+				printModelWithAliases(model, cfg.ModelAliases)
+			}
+		}
+
+		if len(cfg.Models.Gemini) > 0 {
+			fmt.Println("\nGemini models:")
+			for _, model := range cfg.Models.Gemini {
+				printModelWithAliases(model, cfg.ModelAliases)
+			}
 		}
 	},
 }
