@@ -27,7 +27,12 @@ var (
 
 var helpTemplate = `{{with (or .Long .Short)}}{{. | trimTrailingWhitespaces}}
 
-{{end}}{{if or .Runnable .HasSubCommands}}{{.UsageString}}{{end}}`
+{{end}}{{if or .Runnable .HasSubCommands}}
+Current Configuration:
+  Model: ` + cyan("{{Model}}") + `
+  System Prompt: ` + green("{{SystemPrompt | wrap}}") + `
+
+{{.UsageString}}{{end}}`
 
 var usageTemplate = `Usage:{{if .Runnable}}
   ` + cyan("{{.UseLine}}") + `{{end}}{{if .HasAvailableSubCommands}}
@@ -221,6 +226,23 @@ func init() {
 	cobra.AddTemplateFunc("yellow", yellow)
 	cobra.AddTemplateFunc("blue", blue)
 	cobra.AddTemplateFunc("green", green)
+
+	// Define wrap function first
+	wrap := func(s string) string {
+		if len(s) > 60 {
+			return s[:57] + "..."
+		}
+		return s
+	}
+
+	cfg, _ := config.LoadConfig()
+	cobra.AddTemplateFunc("Model", func() string {
+		return cfg.Model
+	})
+	cobra.AddTemplateFunc("SystemPrompt", func() string {
+		return wrap(cfg.SystemPrompt)
+	})
+	cobra.AddTemplateFunc("wrap", wrap)
 
 	rootCmd.SetHelpTemplate(helpTemplate)
 	rootCmd.SetUsageTemplate(usageTemplate)
