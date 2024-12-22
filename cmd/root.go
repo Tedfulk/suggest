@@ -23,6 +23,7 @@ var (
 	yellow = color.New(color.FgYellow).SprintFunc()
 	blue   = color.New(color.FgBlue).SprintFunc()
 	green  = color.New(color.FgGreen).SprintFunc()
+	white  = color.New(color.FgWhite).SprintFunc()
 )
 
 var helpTemplate = `{{with (or .Long .Short)}}{{. | trimTrailingWhitespaces}}

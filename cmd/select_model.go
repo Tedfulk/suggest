@@ -34,8 +34,9 @@ var selectModelCmd = &cobra.Command{
 		if len(cfg.Models.Gemini) > 0 {
 			providers = append(providers, "Gemini")
 		}
+		providers = append(providers, "Exit")
 
-		if len(providers) == 0 {
+		if len(providers) == 1 && providers[0] == "Exit" {
 			fmt.Println("No models available. Please set API keys and run 'suggest models --update'")
 			return
 		}
@@ -54,6 +55,10 @@ var selectModelCmd = &cobra.Command{
 		_, provider, err := providerPrompt.Run()
 		if err != nil {
 			fmt.Printf("Prompt failed %v\n", err)
+			return
+		}
+
+		if provider == "Exit" {
 			return
 		}
 
