@@ -62,14 +62,14 @@ Use "{{.CommandPath}} ` + yellow("[command]") + ` ` + blue("--help") + `" for mo
 
 var rootCmd = &cobra.Command{
 	Use:   "suggest [message]",
-	Short: "Chat with AI models using Groq or OpenAI",
-	Long: `A CLI tool for interacting with various AI models through Groq and OpenAI APIs.
+	Short: "Chat with AI models using Groq, OpenAI, or Gemini",
+	Long: `A CLI tool for interacting with various AI models through Groq, OpenAI, and Gemini APIs.
 Simply type your message after 'suggest' to start chatting.
 
 Example:
   suggest Tell me a joke about programming
   suggest --model gpt-4 What is the meaning of life?
-  suggest -m mixtral-8x7b-32768 Tell me a story
+  suggest -m llama3.3-70b-versatile Tell me a story
   suggest -t "Code Function" --vars "language=Python,task=sort a list"
   suggest -s "Programming Assistant" Write a function`,
 	Args: cobra.ArbitraryArgs,

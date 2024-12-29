@@ -27,13 +27,14 @@ func maskKey(key string) string {
 
 var keysCmd = &cobra.Command{
 	Use:   "keys [provider]",
-	Short: "Manage API keys for OpenAI, Groq, and Gemini",
+	Short: "Manage API keys for OpenAI, Groq, Gemini, and Tavily",
 	Long: `Manage API keys for various AI services.
 	
 Example:
   suggest keys openai     - Set OpenAI API key
   suggest keys groq       - Set Groq API key
   suggest keys gemini     - Set Gemini API key
+  suggest keys tavily     - Set Tavily API key
   suggest keys            - Show current keys`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg, err := config.LoadConfig()
@@ -46,6 +47,7 @@ Example:
 			fmt.Printf("OpenAI API key: %s\n", maskKey(cfg.OpenAIAPIKey))
 			fmt.Printf("Groq API key: %s\n", maskKey(cfg.GroqAPIKey))
 			fmt.Printf("Gemini API key: %s\n", maskKey(cfg.GeminiAPIKey))
+			fmt.Printf("Tavily API key: %s\n", maskKey(cfg.TavilyAPIKey))
 			return
 		}
 
@@ -114,8 +116,22 @@ Example:
 				fmt.Println("Models list updated")
 			}
 
+		case "tavily":
+			fmt.Print("Tavily API Key: ")
+			var key string
+			fmt.Scanln(&key)
+			if key != "" {
+				cfg.TavilyAPIKey = key
+				err = config.SaveConfig(cfg)
+				if err != nil {
+					fmt.Println("Error saving config:", err)
+					return
+				}
+				fmt.Println("Tavily API key updated")
+			}
+
 		default:
-			fmt.Printf("Unknown provider '%s'. Use 'openai', 'groq', or 'gemini'\n", provider)
+			fmt.Printf("Unknown provider '%s'. Use 'openai', 'groq', 'gemini', or 'tavily'\n", provider)
 		}
 	},
 }
