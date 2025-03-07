@@ -92,4 +92,4 @@ You can combine system prompts with templates:
 | Command                                                                                                                           | Description                                       |
 | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
 | `suggest template select translate --vars "source=English,target=French,text=Hello world" --system "You are a helpful assistant"` | Use the template with variables and system prompt |
-| `suggest -s "Technical Writer" template select docs --vars "topic=API,format=markdown"`                                           | Use the template with variables and system        |
+| `suggest -s "Technical Writer" template select docs --vars "topic=API,format=markdown"`                                           | Use the template with variables and system prompt |
