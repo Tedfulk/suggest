@@ -55,13 +55,11 @@ var generateConfigCmd = &cobra.Command{
 		cfg := config.Config{
 			OpenAIAPIKey:   "your-openai-api-key",
 			GroqAPIKey:     "your-groq-api-key",
+			GeminiAPIKey:   "your-gemini-api-key",
+			TavilyAPIKey:   "your-tavily-api-key",
 			SystemPrompt:   defaultPrompts[0].Content,
 			SystemPrompts:  defaultPrompts,
-			Model:         "llama-3.1-70b-versatile",
-			Models: config.ModelsConfig{
-				OpenAI: []string{},
-				Groq:   []string{},
-			},
+			Model:         "llama-3.3-70b-versatile",
 			ModelAliases: make(map[string]string),
 			Templates:    defaultTemplates,
 		}

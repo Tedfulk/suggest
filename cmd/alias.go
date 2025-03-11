@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/tedfulk/suggest/internal/config"
 
 	"github.com/spf13/cobra"
@@ -30,24 +31,38 @@ var aliasAddCmd = &cobra.Command{
 			return
 		}
 
-		modelExists := false
-		for _, m := range cfg.Models.OpenAI {
-			if m == model {
-				modelExists = true
-				break
+		// Determine the provider based on the model name
+		provider := config.DetermineModelProvider(model, cfg)
+		if provider == "" {
+			fmt.Printf("Warning: Unable to determine provider for model '%s'\n", model)
+		} else {
+			// Convert string provider to Provider type
+			var providerType config.Provider
+			switch provider {
+			case "openai":
+				providerType = config.ProviderOpenAI
+			case "groq":
+				providerType = config.ProviderGroq
+			case "gemini":
+				providerType = config.ProviderGemini
 			}
-		}
-		if !modelExists {
-			for _, m := range cfg.Models.Groq {
-				if m == model {
-					modelExists = true
-					break
+
+			// Fetch models from the provider to validate
+			models, err := config.FetchModels(providerType, cfg)
+			if err != nil {
+				fmt.Printf("Warning: Could not validate model: %v\n", err)
+			} else {
+				modelExists := false
+				for _, m := range models {
+					if m == model {
+						modelExists = true
+						break
+					}
+				}
+				if !modelExists {
+					fmt.Printf("Warning: Model '%s' is not in the list of available models\n", model)
 				}
 			}
-		}
-
-		if !modelExists {
-			fmt.Printf("Warning: Model '%s' is not in the list of available models\n", model)
 		}
 
 		cfg.ModelAliases[alias] = model

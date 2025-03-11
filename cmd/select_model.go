@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 	"text/template"
@@ -24,22 +26,7 @@ var selectModelCmd = &cobra.Command{
 		}
 
 		// First, select the provider
-		providers := []string{}
-		if len(cfg.Models.OpenAI) > 0 {
-			providers = append(providers, "OpenAI")
-		}
-		if len(cfg.Models.Groq) > 0 {
-			providers = append(providers, "Groq")
-		}
-		if len(cfg.Models.Gemini) > 0 {
-			providers = append(providers, "Gemini")
-		}
-		providers = append(providers, "Exit")
-
-		if len(providers) == 1 && providers[0] == "Exit" {
-			fmt.Println("No models available. Please set API keys and run 'suggest models --update'")
-			return
-		}
+		providers := []string{"OpenAI", "Groq", "Gemini", "Exit"}
 
 		providerPrompt := promptui.Select{
 			Label: "Select Provider",
@@ -62,30 +49,70 @@ var selectModelCmd = &cobra.Command{
 			return
 		}
 
-		// Then, select the model based on the provider
-		var modelList []string
+		// Check if API key is set for the selected provider
+		var apiKey string
+		var providerType config.Provider
 		switch provider {
 		case "OpenAI":
-			modelList = append(modelList, cfg.Models.OpenAI...)
+			apiKey = cfg.OpenAIAPIKey
+			providerType = config.ProviderOpenAI
 		case "Groq":
-			modelList = append(modelList, cfg.Models.Groq...)
+			apiKey = cfg.GroqAPIKey
+			providerType = config.ProviderGroq
 		case "Gemini":
-			modelList = append(modelList, cfg.Models.Gemini...)
+			apiKey = cfg.GeminiAPIKey
+			providerType = config.ProviderGemini
 		}
 
-		// Sort the base model list
-		sort.Strings(modelList)
+		// If no API key is set, prompt the user to enter one
+		if apiKey == "" {
+			fmt.Printf("\nNo API key set for %s. Please enter your API key: ", provider)
+			scanner := bufio.NewScanner(os.Stdin)
+			if scanner.Scan() {
+				apiKey = scanner.Text()
+			}
+			if apiKey == "" {
+				fmt.Println("API key is required to list models")
+				return
+			}
+
+			// Update the config with the new API key
+			switch provider {
+			case "OpenAI":
+				cfg.OpenAIAPIKey = apiKey
+			case "Groq":
+				cfg.GroqAPIKey = apiKey
+			case "Gemini":
+				cfg.GeminiAPIKey = apiKey
+			}
+
+			err = config.SaveConfig(cfg)
+			if err != nil {
+				fmt.Printf("Error saving config: %v\n", err)
+				return
+			}
+			fmt.Printf("%s API key updated\n", provider)
+		}
+
+		fmt.Printf("\nFetching %s models...\n", provider)
+		models, err := config.FetchModels(providerType, cfg)
+		if err != nil {
+			fmt.Printf("Error fetching models: %v\n", err)
+			return
+		}
+
+		if len(models) == 0 {
+			fmt.Printf("No models available for %s\n", provider)
+			return
+		}
 
 		// Add aliases that match the selected provider
+		var modelList []string
+		modelList = append(modelList, models...)
+		
 		var aliasList []string
 		for alias, model := range cfg.ModelAliases {
-			isOpenAI := strings.HasPrefix(model, "gpt-")
-			isGroq := strings.HasPrefix(model, "mixtral-") || strings.HasPrefix(model, "llama-")
-			isGemini := strings.HasPrefix(model, "gemini-")
-			
-			if (provider == "OpenAI" && isOpenAI) ||
-				(provider == "Groq" && isGroq) ||
-				(provider == "Gemini" && isGemini) {
+			if config.DetermineModelProvider(model, cfg) == string(providerType) {
 				aliasList = append(aliasList, fmt.Sprintf("%s (alias for %s)", alias, model))
 			}
 		}

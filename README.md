@@ -13,7 +13,7 @@ go install github.com/tedfulk/suggest@latest
 ### Generate default config
 
 ```bash
-suggest generate-config
+suggest generate
 ```
 
 View current configuration
@@ -25,20 +25,21 @@ cat ~/.suggest/config.yaml
 ### Use different models for different tasks
 
 ```bash
-suggest "Complex reasoning task"
-suggest -m mixtral "Code generation task"
+suggest "What is the difference between public and private in typescript" # This will use the default model you have set in config
+suggest -m qwen-qwq-32b "Explain go routines" # This will use the specified modle you have passed in
 ```
 
 ### API Key
 
-| Command                           | Description                      |
-| --------------------------------- | -------------------------------- |
-| `suggest keys openai sk-proj-...` | Set OpenAI API key directly      |
-| `suggest keys groq gr-...`        | Set Groq API key directly        |
-| `suggest keys gemini gl-...`      | Set Gemini API key directly      |
-| `suggest keys openai`             | Set OpenAI API key interactively |
-| `suggest keys groq`               | Set Groq API key interactively   |
-| `suggest keys gemini`             | Set Gemini API key interactively |
+| Command                           | Description                          |
+| --------------------------------- | ------------------------------------ |
+| `suggest keys openai sk-proj-...` | Set OpenAI API key directly          |
+| `suggest keys groq gr-...`        | Set Groq API key directly            |
+| `suggest keys gemini gl-...`      | Set Gemini API key directly          |
+| `suggest keys openai`             | Set OpenAI API key interactively     |
+| `suggest keys groq`               | Set Groq API key interactively       |
+| `suggest keys gemini`             | Set Gemini API key interactively     |
+| `suggest keys `                   | Select and set API key interactively |
 
 ### Model Management
 
@@ -47,10 +48,9 @@ suggest -m mixtral "Code generation task"
 | `suggest models`                               | List all available models                  |
 | `suggest models --update`                      | Update model list                          |
 | `suggest model`                                | Interactively select a model               |
-| `suggest alias add gpt4 gpt-4-turbo-preview`   | Create model alias for gpt-4-turbo-preview |
-| `suggest alias add mixtral mixtral-8x7b-32768` | Create model alias for mixtral-8x7b-32768  |
+| `suggest alias add g1.5 gemini-1.5-pro`        | Create model alias for gemini-1.5-pro      |
 | `suggest alias list`                           | List all model aliases                     |
-| `suggest alias remove gpt4`                    | Remove a model alias                       |
+| `suggest alias remove g1.5`                    | Remove a model alias                       |
 
 ### System Prompts
 

@@ -30,15 +30,8 @@ type Config struct {
 	SystemPrompt   string            `yaml:"system_prompt"`
 	SystemPrompts  []SystemPrompt    `yaml:"system_prompts"`
 	Model          string            `yaml:"model"`
-	Models         ModelsConfig      `yaml:"models"`
 	ModelAliases   map[string]string `yaml:"model_aliases"`
 	Templates      []Template        `yaml:"templates"`
-}
-
-type ModelsConfig struct {
-	OpenAI []string `yaml:"openai"`
-	Groq   []string `yaml:"groq"`
-	Gemini []string `yaml:"gemini"`
 }
 
 type ModelResponse struct {
@@ -81,31 +74,6 @@ func migrateConfig(cfg *Config) {
 		}
 	}
 	cfg.SystemPrompts = newPrompts
-
-	if cfg.Models.OpenAI == nil {
-		cfg.Models.OpenAI = []string{}
-	}
-	if cfg.Models.Groq == nil {
-		cfg.Models.Groq = []string{}
-	}
-	if cfg.Models.Gemini == nil {
-		cfg.Models.Gemini = []string{}
-	}
-
-	if cfg.Templates == nil {
-		cfg.Templates = []Template{}
-	}
-
-	if oldTemplates, ok := interface{}(cfg.Templates).(map[string]string); ok {
-		var newTemplates []Template
-		for name, content := range oldTemplates {
-			newTemplates = append(newTemplates, Template{
-				Title:   name,
-				Content: content,
-			})
-		}
-		cfg.Templates = newTemplates
-	}
 }
 
 func LoadConfig() (*Config, error) {
@@ -122,11 +90,6 @@ func LoadConfig() (*Config, error) {
 				Templates:    []Template{},
 				ModelAliases: make(map[string]string),
 				SystemPrompts: []SystemPrompt{},
-				Models: ModelsConfig{
-					OpenAI: []string{},
-					Groq:   []string{},
-					Gemini: []string{},
-				},
 			}, nil
 		}
 		return nil, err
@@ -158,36 +121,42 @@ func SaveConfig(config *Config) error {
 	return os.WriteFile(configPath, data, 0644)
 }
 
-func UpdateModels(config *Config, provider Provider) error {
+func DetermineModelProvider(model string, config *Config) string {
+	if strings.HasPrefix(model, "gpt-") {
+		return "openai"
+	}
+	if strings.HasPrefix(model, "mixtral-") || strings.HasPrefix(model, "llama-") {
+		return "groq"
+	}
+	if strings.HasPrefix(model, "gemini-") {
+		return "gemini"
+	}
+	return ""
+}
+
+// FetchModels fetches available models from a provider
+func FetchModels(provider Provider, cfg *Config) ([]string, error) {
 	switch provider {
 	case ProviderOpenAI:
-		if config.OpenAIAPIKey != "" {
-			openAIModels, err := fetchModels("https://api.openai.com/v1/models", config.OpenAIAPIKey)
-			if err != nil {
-				return fmt.Errorf("error fetching OpenAI models: %w", err)
-			}
-			config.Models.OpenAI = openAIModels
+		if cfg.OpenAIAPIKey != "" {
+			return fetchModels("https://api.openai.com/v1/models", cfg.OpenAIAPIKey)
 		}
 	case ProviderGroq:
-		if config.GroqAPIKey != "" {
-			groqModels, err := fetchModels("https://api.groq.com/openai/v1/models", config.GroqAPIKey)
-			if err != nil {
-				return fmt.Errorf("error fetching Groq models: %w", err)
-			}
-			config.Models.Groq = groqModels
+		if cfg.GroqAPIKey != "" {
+			return fetchModels("https://api.groq.com/openai/v1/models", cfg.GroqAPIKey)
 		}
 	case ProviderGemini:
-		if config.GeminiAPIKey != "" {
-			url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models?key=%s", config.GeminiAPIKey)
+		if cfg.GeminiAPIKey != "" {
+			url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models?key=%s", cfg.GeminiAPIKey)
 			resp, err := http.Get(url)
 			if err != nil {
-				return fmt.Errorf("error fetching Gemini models: %w", err)
+				return nil, fmt.Errorf("error fetching Gemini models: %w", err)
 			}
 			defer resp.Body.Close()
 
 			if resp.StatusCode != http.StatusOK {
 				body, _ := io.ReadAll(resp.Body)
-				return fmt.Errorf("failed to fetch Gemini models: %s", string(body))
+				return nil, fmt.Errorf("failed to fetch Gemini models: %s", string(body))
 			}
 
 			var geminiResp struct {
@@ -198,7 +167,7 @@ func UpdateModels(config *Config, provider Provider) error {
 			}
 
 			if err := json.NewDecoder(resp.Body).Decode(&geminiResp); err != nil {
-				return fmt.Errorf("error parsing Gemini models: %w", err)
+				return nil, fmt.Errorf("error parsing Gemini models: %w", err)
 			}
 
 			var models []string
@@ -211,62 +180,10 @@ func UpdateModels(config *Config, provider Provider) error {
 					}
 				}
 			}
-			config.Models.Gemini = models
-		}
-	case ProviderAll:
-		if config.OpenAIAPIKey != "" {
-			openAIModels, err := fetchModels("https://api.openai.com/v1/models", config.OpenAIAPIKey)
-			if err != nil {
-				return fmt.Errorf("error fetching OpenAI models: %w", err)
-			}
-			config.Models.OpenAI = openAIModels
-		}
-		if config.GroqAPIKey != "" {
-			groqModels, err := fetchModels("https://api.groq.com/openai/v1/models", config.GroqAPIKey)
-			if err != nil {
-				return fmt.Errorf("error fetching Groq models: %w", err)
-			}
-			config.Models.Groq = groqModels
-		}
-		if config.GeminiAPIKey != "" {
-			url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models?key=%s", config.GeminiAPIKey)
-			resp, err := http.Get(url)
-			if err != nil {
-				return fmt.Errorf("error fetching Gemini models: %w", err)
-			}
-			defer resp.Body.Close()
-
-			if resp.StatusCode != http.StatusOK {
-				body, _ := io.ReadAll(resp.Body)
-				return fmt.Errorf("failed to fetch Gemini models: %s", string(body))
-			}
-
-			var geminiResp struct {
-				Models []struct {
-					Name                      string   `json:"name"`
-					SupportedGenerationMethods []string `json:"supportedGenerationMethods"`
-				} `json:"models"`
-			}
-
-			if err := json.NewDecoder(resp.Body).Decode(&geminiResp); err != nil {
-				return fmt.Errorf("error parsing Gemini models: %w", err)
-			}
-
-			var models []string
-			for _, model := range geminiResp.Models {
-				for _, method := range model.SupportedGenerationMethods {
-					if method == "generateContent" {
-						name := strings.TrimPrefix(model.Name, "models/")
-						models = append(models, name)
-						break
-					}
-				}
-			}
-			config.Models.Gemini = models
+			return models, nil
 		}
 	}
-
-	return SaveConfig(config)
+	return nil, fmt.Errorf("no API key set for provider %s", provider)
 }
 
 func fetchModels(url, apiKey string) ([]string, error) {
@@ -299,34 +216,4 @@ func fetchModels(url, apiKey string) ([]string, error) {
 	}
 
 	return models, nil
-}
-
-func DetermineModelProvider(model string, config *Config) string {
-	for _, m := range config.Models.OpenAI {
-		if m == model {
-			return "openai"
-		}
-	}
-	for _, m := range config.Models.Groq {
-		if m == model {
-			return "groq"
-		}
-	}
-	for _, m := range config.Models.Gemini {
-		if m == model {
-			return "gemini"
-		}
-	}
-
-	if strings.HasPrefix(model, "gpt-") {
-		return "openai"
-	}
-	if strings.HasPrefix(model, "mixtral-") || strings.HasPrefix(model, "llama-") {
-		return "groq"
-	}
-	if strings.HasPrefix(model, "gemini-") {
-		return "gemini"
-	}
-
-	return ""
 }

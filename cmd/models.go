@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/tedfulk/suggest/internal/config"
 
@@ -10,7 +11,7 @@ import (
 
 var modelsCmd = &cobra.Command{
 	Use:   "models",
-	Short: "List or update available models",
+	Short: "List available models",
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg, err := config.LoadConfig()
 		if err != nil {
@@ -18,53 +19,49 @@ var modelsCmd = &cobra.Command{
 			return
 		}
 
-		update, _ := cmd.Flags().GetBool("update")
-		if update || len(cfg.Models.OpenAI) == 0 && len(cfg.Models.Groq) == 0 && len(cfg.Models.Gemini) == 0 {
-			fmt.Println("Updating models list...")
-			err = config.UpdateModels(cfg, config.ProviderAll)
-			if err != nil {
-				fmt.Println("Error updating models:", err)
-				return
-			}
-			cfg, err = config.LoadConfig()
-			if err != nil {
-				fmt.Println("Error reloading config:", err)
-				return
-			}
-		}
-
-		if len(cfg.Models.OpenAI) == 0 && len(cfg.Models.Groq) == 0 && len(cfg.Models.Gemini) == 0 {
-			fmt.Println("No models available. Please set an API key and run 'suggest models --update'")
-			return
-		}
-
-		fmt.Println("Available models:")
-		
-		if len(cfg.Models.OpenAI) > 0 {
+		// Fetch models from each configured provider
+		if cfg.OpenAIAPIKey != "" {
 			fmt.Println("\nOpenAI models:")
-			for _, model := range cfg.Models.OpenAI {
-				printModelWithAliases(model, cfg.ModelAliases)
+			models, err := config.FetchModels(config.ProviderOpenAI, cfg)
+			if err != nil {
+				fmt.Printf("Error fetching OpenAI models: %v\n", err)
+			} else {
+				sort.Strings(models)
+				for _, model := range models {
+					printModelWithAliases(model, cfg.ModelAliases)
+				}
 			}
 		}
 
-		if len(cfg.Models.Groq) > 0 {
+		if cfg.GroqAPIKey != "" {
 			fmt.Println("\nGroq models:")
-			for _, model := range cfg.Models.Groq {
-				printModelWithAliases(model, cfg.ModelAliases)
+			models, err := config.FetchModels(config.ProviderGroq, cfg)
+			if err != nil {
+				fmt.Printf("Error fetching Groq models: %v\n", err)
+			} else {
+				sort.Strings(models)
+				for _, model := range models {
+					printModelWithAliases(model, cfg.ModelAliases)
+				}
 			}
 		}
 
-		if len(cfg.Models.Gemini) > 0 {
+		if cfg.GeminiAPIKey != "" {
 			fmt.Println("\nGemini models:")
-			for _, model := range cfg.Models.Gemini {
-				printModelWithAliases(model, cfg.ModelAliases)
+			models, err := config.FetchModels(config.ProviderGemini, cfg)
+			if err != nil {
+				fmt.Printf("Error fetching Gemini models: %v\n", err)
+			} else {
+				sort.Strings(models)
+				for _, model := range models {
+					printModelWithAliases(model, cfg.ModelAliases)
+				}
 			}
 		}
 	},
 }
 
 func init() {
-	modelsCmd.Flags().BoolP("update", "u", false, "Update the models list")
 	rootCmd.AddCommand(modelsCmd)
 }
 

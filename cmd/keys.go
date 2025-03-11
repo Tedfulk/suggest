@@ -66,7 +66,7 @@ Example:
 				}
 				fmt.Println("OpenAI API key updated")
 				fmt.Println("Updating available models...")
-				err = config.UpdateModels(cfg, config.ProviderOpenAI)
+				_, err = config.FetchModels(config.ProviderOpenAI, cfg)
 				if err != nil {
 					fmt.Println("Error updating models:", err)
 					return
@@ -87,7 +87,7 @@ Example:
 				}
 				fmt.Println("Groq API key updated")
 				fmt.Println("Updating available models...")
-				err = config.UpdateModels(cfg, config.ProviderGroq)
+				_, err = config.FetchModels(config.ProviderGroq, cfg)
 				if err != nil {
 					fmt.Println("Error updating models:", err)
 					return
@@ -108,7 +108,7 @@ Example:
 				}
 				fmt.Println("Gemini API key updated")
 				fmt.Println("Updating available models...")
-				err = config.UpdateModels(cfg, config.ProviderGemini)
+				_, err = config.FetchModels(config.ProviderGemini, cfg)
 				if err != nil {
 					fmt.Println("Error updating models:", err)
 					return

@@ -46,7 +46,7 @@ func (c *GeminiClient) CreateChatCompletion(req *ChatCompletionRequest) (*ChatCo
 
 	// Map roles from OpenAI format to Gemini format
 	roleMap := map[string]string{
-		"system":    "user",      // Gemini doesn't have system, use user
+		"system":    "user",
 		"user":      "user",
 		"assistant": "model",
 	}
