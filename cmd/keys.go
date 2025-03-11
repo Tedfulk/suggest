@@ -48,6 +48,7 @@ Example:
 			fmt.Printf("Groq API key: %s\n", maskKey(cfg.GroqAPIKey))
 			fmt.Printf("Gemini API key: %s\n", maskKey(cfg.GeminiAPIKey))
 			fmt.Printf("Tavily API key: %s\n", maskKey(cfg.TavilyAPIKey))
+			fmt.Printf("Ollama Host: %s\n", cfg.OllamaHost)
 			return
 		}
 
@@ -128,6 +129,20 @@ Example:
 					return
 				}
 				fmt.Println("Tavily API key updated")
+			}
+
+		case "ollama":
+			fmt.Print("Ollama Host (default: http://localhost:11434): ")
+			var host string
+			fmt.Scanln(&host)
+			if host != "" {
+				cfg.OllamaHost = host
+				err = config.SaveConfig(cfg)
+				if err != nil {
+					fmt.Println("Error saving config:", err)
+					return
+				}
+				fmt.Println("Ollama host updated")
 			}
 
 		default:

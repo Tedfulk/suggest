@@ -26,7 +26,7 @@ var selectModelCmd = &cobra.Command{
 		}
 
 		// First, select the provider
-		providers := []string{"OpenAI", "Groq", "Gemini", "Exit"}
+		providers := []string{"OpenAI", "Groq", "Gemini", "Ollama", "Exit"}
 
 		providerPrompt := promptui.Select{
 			Label: "Select Provider",
@@ -62,10 +62,16 @@ var selectModelCmd = &cobra.Command{
 		case "Gemini":
 			apiKey = cfg.GeminiAPIKey
 			providerType = config.ProviderGemini
+		case "Ollama":
+			// No API key needed for Ollama, just check the host
+			if cfg.OllamaHost == "" {
+				cfg.OllamaHost = "http://localhost:11434" // Set default if not configured
+			}
+			providerType = config.ProviderOllama
 		}
 
-		// If no API key is set, prompt the user to enter one
-		if apiKey == "" {
+		// If no API key is set and it's not Ollama, prompt the user to enter one
+		if apiKey == "" && provider != "Ollama" {
 			fmt.Printf("\nNo API key set for %s. Please enter your API key: ", provider)
 			scanner := bufio.NewScanner(os.Stdin)
 			if scanner.Scan() {
@@ -102,7 +108,11 @@ var selectModelCmd = &cobra.Command{
 		}
 
 		if len(models) == 0 {
-			fmt.Printf("No models available for %s\n", provider)
+			if provider == "Ollama" {
+				fmt.Println("No Ollama models found. Please pull some models first using 'ollama pull <model>'")
+			} else {
+				fmt.Printf("No models available for %s\n", provider)
+			}
 			return
 		}
 
@@ -143,7 +153,7 @@ var selectModelCmd = &cobra.Command{
 				Selected: "\U00002705 {{ . | green }}", 
 				FuncMap:  funcMap,
 				Details: `
-{{ "Provider:" | faint }}	{{ if hasPrefix . "gpt-" }}OpenAI{{ else if or (hasPrefix . "mixtral-") (hasPrefix . "llama-") }}Groq{{ else }}Unknown{{ end }}
+{{ "Provider:" | faint }}	{{ if hasPrefix . "gpt-" }}OpenAI{{ else if or (hasPrefix . "mixtral-") (hasPrefix . "llama-") }}Groq{{ else if hasPrefix . "gemini-" }}Gemini{{ else }}Ollama{{ end }}
 {{ "Current:" | faint }}	{{ if eq . $.Model }}Yes{{ else }}No{{ end }}`,
 			},
 		}

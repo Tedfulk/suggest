@@ -29,6 +29,30 @@ suggest "What is the difference between public and private in typescript" # This
 suggest -m qwen-qwq-32b "Explain go routines" # This will use the specified modle you have passed in
 ```
 
+### Ollama Integration
+
+`suggest` supports local AI models through Ollama. To use Ollama models:
+
+1. Install Ollama from https://ollama.ai
+2. Pull your desired models:
+   ```bash
+   ollama pull codellama    # For coding tasks
+   ollama pull llama2       # General purpose
+   ollama pull mistral      # Another option
+   ```
+3. Configure Ollama host (optional, defaults to http://localhost:11434):
+   ```bash
+   suggest keys ollama
+   ```
+4. Use Ollama models:
+   ```bash
+   suggest model            # Select model interactively
+   # or
+   suggest -m codellama "Write a Python function"
+   ```
+
+Ollama runs locally on your machine, so no API key is required. You can use any model that you've pulled with `ollama pull`.
+
 ### API Key
 
 | Command                           | Description                          |

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
 	"github.com/tedfulk/suggest/internal/config"
 
 	"github.com/spf13/cobra"
@@ -57,6 +58,7 @@ var generateConfigCmd = &cobra.Command{
 			GroqAPIKey:     "your-groq-api-key",
 			GeminiAPIKey:   "your-gemini-api-key",
 			TavilyAPIKey:   "your-tavily-api-key",
+			OllamaHost:     "http://localhost:11434",
 			SystemPrompt:   defaultPrompts[0].Content,
 			SystemPrompts:  defaultPrompts,
 			Model:         "llama-3.3-70b-versatile",

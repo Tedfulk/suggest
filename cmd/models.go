@@ -58,6 +58,18 @@ var modelsCmd = &cobra.Command{
 				}
 			}
 		}
+
+		// Add Ollama models section
+		fmt.Println("\nOllama models:")
+		models, err := config.FetchModels(config.ProviderOllama, cfg)
+		if err != nil {
+			fmt.Printf("Error fetching Ollama models: %v\n", err)
+		} else {
+			sort.Strings(models)
+			for _, model := range models {
+				printModelWithAliases(model, cfg.ModelAliases)
+			}
+		}
 	},
 }
 

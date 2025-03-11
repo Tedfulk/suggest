@@ -64,8 +64,8 @@ Use "{{.CommandPath}} ` + yellow("[command]") + ` ` + blue("--help") + `" for mo
 
 var rootCmd = &cobra.Command{
 	Use:   "suggest [message]",
-	Short: "Chat with AI models using Groq, OpenAI, or Gemini",
-	Long: `A CLI tool for interacting with various AI models through Groq, OpenAI, and Gemini APIs.
+	Short: "Chat with AI models using Groq, OpenAI, Gemini, or Ollama",
+	Long: `A CLI tool for interacting with various AI models through Groq, OpenAI, Gemini, and Ollama APIs.
 Simply type your message after 'suggest' to start chatting.
 
 Example:
@@ -159,6 +159,11 @@ Example:
 		var apiErr error
 
 		provider := config.DetermineModelProvider(model, cfg)
+		if provider == "" {
+			fmt.Printf("Model '%s' not supported. Please use a Groq, OpenAI, Gemini, or Ollama model.\n", model)
+			return
+		}
+
 		switch provider {
 		case "groq":
 			if cfg.GroqAPIKey == "" {
@@ -184,8 +189,12 @@ Example:
 			client := api.NewGeminiClient(cfg.GeminiAPIKey)
 			resp, apiErr = client.CreateChatCompletion(req)
 		
+		case "ollama":
+			client := api.NewOllamaClient(cfg.OllamaHost)
+			resp, apiErr = client.CreateChatCompletion(req)
+		
 		default:
-			fmt.Printf("Model '%s' not supported. Please use a Groq, OpenAI, or Gemini model.\n", model)
+			fmt.Printf("Model '%s' not supported. Please use a Groq, OpenAI, Gemini, or Ollama model.\n", model)
 			return
 		}
 

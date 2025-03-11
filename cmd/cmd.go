@@ -134,21 +134,23 @@ func getResponse(provider string, cfg *config.Config, req *api.ChatCompletionReq
 	switch provider {
 	case "groq":
 		if cfg.GroqAPIKey == "" {
-			return nil, fmt.Errorf("Groq API key not set")
+			return nil, fmt.Errorf("groq API key not set")
 		}
 		return api.NewGroqClient(cfg.GroqAPIKey).CreateChatCompletion(req)
 	case "openai":
 		if cfg.OpenAIAPIKey == "" {
-			return nil, fmt.Errorf("OpenAI API key not set")
+			return nil, fmt.Errorf("openai API key not set")
 		}
 		return api.NewOpenAIClient(cfg.OpenAIAPIKey).CreateChatCompletion(req)
 	case "gemini":
 		if cfg.GeminiAPIKey == "" {
-			return nil, fmt.Errorf("Gemini API key not set")
+			return nil, fmt.Errorf("gemini API key not set")
 		}
 		return api.NewGeminiClient(cfg.GeminiAPIKey).CreateChatCompletion(req)
+	case "ollama":
+		return api.NewOllamaClient(cfg.OllamaHost).CreateChatCompletion(req)
 	default:
-		return nil, fmt.Errorf("Model '%s' not supported", cfg.Model)
+		return nil, fmt.Errorf("model '%s' not supported", cfg.Model)
 	}
 }
 

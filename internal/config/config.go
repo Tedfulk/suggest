@@ -27,6 +27,7 @@ type Config struct {
 	GroqAPIKey     string            `yaml:"groq_api_key"`
 	GeminiAPIKey   string            `yaml:"gemini_api_key"`
 	TavilyAPIKey   string            `yaml:"tavily_api_key"`
+	OllamaHost     string            `yaml:"ollama_host"`
 	SystemPrompt   string            `yaml:"system_prompt"`
 	SystemPrompts  []SystemPrompt    `yaml:"system_prompts"`
 	Model          string            `yaml:"model"`
@@ -46,6 +47,7 @@ const (
 	ProviderOpenAI Provider = "openai"
 	ProviderGroq   Provider = "groq"
 	ProviderGemini Provider = "gemini"
+	ProviderOllama Provider = "ollama"
 	ProviderAll    Provider = "all"
 )
 
@@ -131,6 +133,12 @@ func DetermineModelProvider(model string, config *Config) string {
 	if strings.HasPrefix(model, "gemini-") {
 		return "gemini"
 	}
+	if strings.Contains(model, ":") ||
+		strings.HasPrefix(model, "llama2") ||
+		strings.HasPrefix(model, "codellama") ||
+		strings.HasPrefix(model, "mistral") {
+		return "ollama"
+	}
 	return ""
 }
 
@@ -182,6 +190,38 @@ func FetchModels(provider Provider, cfg *Config) ([]string, error) {
 			}
 			return models, nil
 		}
+	case ProviderOllama:
+		host := cfg.OllamaHost
+		if host == "" {
+			host = "http://localhost:11434"
+		}
+		
+		resp, err := http.Get(fmt.Sprintf("%s/api/tags", host))
+		if err != nil {
+			return nil, fmt.Errorf("error fetching Ollama models: %w", err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			body, _ := io.ReadAll(resp.Body)
+			return nil, fmt.Errorf("failed to fetch Ollama models: %s", string(body))
+		}
+
+		var ollamaResp struct {
+			Models []struct {
+				Name string `json:"name"`
+			} `json:"models"`
+		}
+
+		if err := json.NewDecoder(resp.Body).Decode(&ollamaResp); err != nil {
+			return nil, fmt.Errorf("error parsing Ollama models: %w", err)
+		}
+
+		var models []string
+		for _, model := range ollamaResp.Models {
+			models = append(models, model.Name)
+		}
+		return models, nil
 	}
 	return nil, fmt.Errorf("no API key set for provider %s", provider)
 }
