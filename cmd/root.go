@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/tedfulk/suggest/internal/api"
@@ -16,6 +17,7 @@ var (
 	modelFlag    string
 	templateFlag string
 	systemFlag   string
+	version      = "dev"  // This will be set during build
 )
 
 var (
@@ -222,6 +224,7 @@ func init() {
 	rootCmd.Flags().StringVarP(&modelFlag, "model", "m", "", "Specify the model to use")
 	rootCmd.Flags().StringVarP(&templateFlag, "template", "t", "", "Use a template (format: template-name)")
 	rootCmd.Flags().StringVarP(&systemFlag, "system", "s", "", "Use a specific system prompt by title")
+	rootCmd.Flags().BoolP("version", "v", false, "Print version information")
 
 	cobra.AddTemplateFunc("cyan", cyan)
 	cobra.AddTemplateFunc("yellow", yellow)
@@ -251,6 +254,15 @@ func init() {
 	for _, cmd := range rootCmd.Commands() {
 		cmd.SetHelpTemplate(helpTemplate)
 		cmd.SetUsageTemplate(usageTemplate)
+	}
+
+	// Add version flag handling
+	rootCmd.PreRun = func(cmd *cobra.Command, args []string) {
+		versionFlag, _ := cmd.Flags().GetBool("version")
+		if versionFlag {
+			fmt.Printf("suggest version %s\n", version)
+			os.Exit(0)
+		}
 	}
 }
 
