@@ -17,6 +17,7 @@ var (
 	modelFlag    string
 	templateFlag string
 	systemFlag   string
+	enhanceFlag  bool
 	version      = "dev"  // This will be set during build
 )
 
@@ -87,6 +88,32 @@ Example:
 		if err != nil {
 			fmt.Println("Error loading config:", err)
 			return
+		}
+
+		if enhanceFlag {
+			if cfg.GroqAPIKey == "" {
+				fmt.Println("Groq API key not set. Please set it in your config file.")
+				return
+			}
+
+			enhancedPrompt, err := enhancePrompt(message, cfg)
+			if err != nil {
+				fmt.Printf("Error enhancing prompt: %v\n", err)
+				return
+			}
+
+			// Use Glamour to render the enhanced prompt
+			r, _ := glamour.NewTermRenderer(
+				glamour.WithAutoStyle(),
+				glamour.WithWordWrap(100),
+			)
+			renderedPrompt, err := r.Render(enhancedPrompt)
+			if err != nil {
+				fmt.Printf("\nEnhanced prompt:\n%s\n\nProcessing enhanced prompt...\n\n", enhancedPrompt)
+			} else {
+				fmt.Printf("\nEnhanced prompt:\n%s\nProcessing enhanced prompt...\n\n", renderedPrompt)
+			}
+			message = enhancedPrompt
 		}
 
 		if templateFlag != "" {
@@ -233,6 +260,7 @@ func init() {
 	rootCmd.Flags().StringVarP(&modelFlag, "model", "m", "", "Specify the model to use")
 	rootCmd.Flags().StringVarP(&templateFlag, "template", "t", "", "Use a template (format: template-name)")
 	rootCmd.Flags().StringVarP(&systemFlag, "system", "s", "", "Use a specific system prompt by title")
+	rootCmd.Flags().BoolVarP(&enhanceFlag, "enhance", "e", false, "Enhance the prompt before processing")
 	rootCmd.Flags().BoolP("version", "v", false, "Print version information")
 
 	cobra.AddTemplateFunc("cyan", cyan)

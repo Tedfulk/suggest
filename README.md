@@ -10,6 +10,33 @@ go install github.com/tedfulk/suggest@latest
 
 ## Usage
 
+### Enhance Prompts
+
+The `suggest` CLI provides two ways to enhance your coding-related prompts for better results:
+
+1. Using the `-e` flag:
+```bash
+suggest -e "How do I use generics?"  # Enhances the prompt before processing
+```
+
+2. Using the enhance command:
+```bash
+suggest enhance "How do I use generics?"  # Same as above but as a separate command
+```
+
+Both methods will:
+1. Use Groq's llama-3.3-70b-versatile model to enhance your prompt with more specificity and structure
+2. Show you the enhanced version
+3. Process the enhanced prompt with your default model
+
+Example:
+```bash
+suggest enhance "What are design patterns?"
+# Will enhance the prompt to be more specific and detailed before processing
+```
+
+Note: The enhance feature requires a Groq API key to be configured.
+
 ### Generate default config
 
 ```bash
@@ -37,8 +64,7 @@ suggest -m qwen-qwq-32b "Explain go routines" # This will use the specified modl
 2. Pull your desired models:
    ```bash
    ollama pull codellama    # For coding tasks
-   ollama pull llama2       # General purpose
-   ollama pull mistral      # Another option
+   ollama pull llama3       # General purpose
    ```
 3. Configure Ollama host (optional, defaults to http://localhost:11434):
    ```bash
@@ -86,6 +112,18 @@ Ollama runs locally on your machine, so no API key is required. You can use any 
 | `suggest system select`                                        | Select system prompt interactively |
 | `suggest system select "coder"`                                | Select system prompt directly      |
 | `suggest system remove "coder"`                                | Remove a system prompt             |
+
+### Enhance Feature
+
+| Command                                                        | Description                                                |
+| -------------------------------------------------------------- | ---------------------------------------------------------- |
+| `suggest -e "Write a Python function"`                         | Enhance prompt with additional context and clarification   |
+| `suggest --enhance "Explain quantum computing"`                | Expand prompt to be more detailed and specific            |
+| `suggest -e -m gpt-4 "Create a web scraper"`                  | Use enhancement with a specific model                      |
+| `suggest -e -s "coder" "Implement binary search"`             | Combine enhancement with system prompt                     |
+
+This feature requires a Groq API key to be configured:
+
 
 ### Templates
 

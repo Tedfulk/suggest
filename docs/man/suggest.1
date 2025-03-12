@@ -8,6 +8,7 @@ suggest \- AI-powered command-line assistant
 [\fB\-m\fR \fImodel\fR]
 [\fB\-t\fR \fItemplate\fR]
 [\fB\-s\fR \fIsystem-prompt\fR]
+[\fB\-e\fR]
 [\fB\-h\fR]
 [\fIcommand\fR]
 [\fItext\fR]
@@ -20,6 +21,9 @@ is a command-line tool that provides AI-powered assistance using various languag
 .TP
 .B suggest model
 Interactively select a model to use
+.TP
+.B suggest enhance [message]
+Enhance a coding-related prompt with more specificity and structure
 .TP
 .B suggest models [\-\-update]
 List or update available models
@@ -97,6 +101,9 @@ List all model aliases
 .B \-m, \-\-model
 Specify the model to use
 .TP
+.B \-e, \-\-enhance
+Enhance the prompt before processing (requires Groq API key)
+.TP
 .B \-t, \-\-template
 Use a template
 .TP
@@ -110,6 +117,10 @@ Show help message
 .TP
 Basic usage:
 .B suggest "Write a Python function to sort a list"
+.TP
+Using enhance:
+.B suggest enhance "How do I use generics?"
+.B suggest -e "What are design patterns?"
 .TP
 Using a specific model:
 .B suggest \-m gpt-4 "Explain quantum computing"
@@ -153,15 +164,3 @@ Alternative way to set OpenAI API key
 .TP
 .B GROQ_API_KEY
 Alternative way to set Groq API key
-
-.SH BUGS
-Report bugs at: https://github.com/yourusername/suggest/issues
-
-.SH AUTHOR
-Your Name <your.email@example.com>
-
-.SH COPYRIGHT
-Copyright © 2024 Your Name. License MIT.
-
-.SH SEE ALSO
-Full documentation at: https://github.com/yourusername/suggest 
