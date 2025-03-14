@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/tedfulk/suggest/internal/api"
@@ -18,8 +19,22 @@ var (
 	templateFlag string
 	systemFlag   string
 	enhanceFlag  bool
-	version      = "dev"  // This will be set during build
 )
+
+func getLatestTag() string {
+	cmd := exec.Command("git", "tag", "--sort=-v:refname")
+	out, err := cmd.Output()
+	if err != nil {
+		return "dev"
+	}
+	tags := strings.Split(strings.TrimSpace(string(out)), "\n")
+	if len(tags) > 0 {
+		return tags[0]
+	}
+	return "dev"
+}
+
+var version = getLatestTag()  // This will be the latest git tag or "dev" if no tags exist
 
 var (
 	cyan   = color.New(color.FgCyan).SprintFunc()
@@ -33,6 +48,7 @@ var helpTemplate = `{{with (or .Long .Short)}}{{. | trimTrailingWhitespaces}}
 
 {{end}}{{if or .Runnable .HasSubCommands}}
 Current Configuration:
+  Version: ` + cyan("{{Version}}") + `
   Model: ` + cyan("{{Model}}") + `
   System Prompt: ` + green("{{SystemPrompt | wrap}}") + `
 
@@ -74,7 +90,8 @@ Example:
   suggest --model gpt-4 What is the meaning of life?
   suggest -m llama3.3-70b-versatile Tell me a story
   suggest -t "Code Function" --vars "language=Python,task=sort a list"
-  suggest -s "Programming Assistant" Write a function`,
+  suggest -s "Programming Assistant" Write a function
+  suggest -e "What are design patterns?"`,
 	Args: cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
@@ -284,6 +301,9 @@ func init() {
 		return wrap(cfg.SystemPrompt)
 	})
 	cobra.AddTemplateFunc("wrap", wrap)
+	cobra.AddTemplateFunc("Version", func() string {
+		return version
+	})
 
 	rootCmd.SetHelpTemplate(helpTemplate)
 	rootCmd.SetUsageTemplate(usageTemplate)
