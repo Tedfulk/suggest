@@ -22,16 +22,23 @@ var (
 )
 
 func getLatestTag() string {
-	cmd := exec.Command("git", "tag", "--sort=-v:refname")
+	cmd := exec.Command("git", "ls-remote", "--tags", "--sort=-v:refname", "https://github.com/tedfulk/suggest.git")
 	out, err := cmd.Output()
 	if err != nil {
 		return "dev"
 	}
-	tags := strings.Split(strings.TrimSpace(string(out)), "\n")
-	if len(tags) > 0 {
-		return tags[0]
+
+	lines := strings.Split(strings.TrimSpace(string(out)), "\n")
+	if len(lines) == 0 {
+		return "dev"
 	}
-	return "dev"
+
+	tag := strings.Fields(lines[0])[1]
+	tag = strings.TrimPrefix(tag, "refs/tags/")
+	tag = strings.TrimPrefix(tag, "v")
+	tag = strings.TrimSuffix(tag, "^{}")
+
+	return tag
 }
 
 var version = getLatestTag()  // This will be the latest git tag or "dev" if no tags exist
