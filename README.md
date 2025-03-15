@@ -4,6 +4,15 @@ A powerful command-line tool for interacting with AI models through various prov
 
 ## Installation
 
+### Using Homebrew (recommended)
+
+```bash
+brew tap tedfulk/suggest
+brew install suggest
+```
+
+### Using Go Install
+
 ```bash
 go install github.com/tedfulk/suggest@latest
 ```
