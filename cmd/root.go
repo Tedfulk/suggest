@@ -55,6 +55,7 @@ var helpTemplate = `{{with (or .Long .Short)}}{{. | trimTrailingWhitespaces}}
 
 {{end}}{{if or .Runnable .HasSubCommands}}
 Current Configuration:
+  Username: ` + cyan("{{Username}}") + `
   Version: ` + cyan("{{Version}}") + `
   Model: ` + cyan("{{Model}}") + `
   System Prompt: ` + green("{{SystemPrompt | wrap}}") + `
@@ -311,6 +312,12 @@ func init() {
 	cobra.AddTemplateFunc("wrap", wrap)
 	cobra.AddTemplateFunc("Version", func() string {
 		return version
+	})
+	cobra.AddTemplateFunc("Username", func() string {
+		if cfg.Username == "" {
+			return "User"
+		}
+		return cfg.Username
 	})
 
 	rootCmd.SetHelpTemplate(helpTemplate)

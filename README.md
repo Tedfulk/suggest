@@ -10,6 +10,24 @@ go install github.com/tedfulk/suggest@latest
 
 ## Usage
 
+### Interactive Chat Mode
+
+Start an interactive chat session with your preferred AI model:
+
+```bash
+suggest chat                    # Start chat with default model
+suggest chat -m gpt-4          # Chat with a specific model
+suggest chat -s "Coder"        # Chat with a specific system prompt
+```
+
+To exit the chat session, type 'bye', 'stop', 'end', or press Ctrl+C.
+
+### Set Your Chat Username
+
+```bash
+suggest username  # Set your username for chat sessions
+```
+
 ### Enhance Prompts
 
 The `suggest` CLI provides two ways to enhance your coding-related prompts for better results:
@@ -123,7 +141,6 @@ Ollama runs locally on your machine, so no API key is required. You can use any 
 | `suggest -e -s "coder" "Implement binary search"`             | Combine enhancement with system prompt                     |
 
 This feature requires a Groq API key to be configured:
-
 
 ### Templates
 
