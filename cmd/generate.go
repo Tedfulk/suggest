@@ -20,7 +20,7 @@ var generateConfigCmd = &cobra.Command{
 			return
 		}
 
-		configPath := filepath.Join(homeDir, ".suggest", "config.yaml")
+		configPath := filepath.Join(homeDir, ".config", "suggest", "config.yml")
 		err = os.MkdirAll(filepath.Dir(configPath), os.ModePerm)
 		if err != nil {
 			fmt.Println("Error creating config directory:", err)

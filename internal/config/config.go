@@ -85,7 +85,7 @@ func LoadConfig() (*Config, error) {
 		return nil, err
 	}
 
-	configPath := filepath.Join(homeDir, ".suggest", "config.yaml")
+	configPath := filepath.Join(homeDir, ".config", "suggest", "config.yml")
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -115,7 +115,12 @@ func SaveConfig(config *Config) error {
 		return err
 	}
 
-	configPath := filepath.Join(homeDir, ".suggest", "config.yaml")
+	configPath := filepath.Join(homeDir, ".config", "suggest", "config.yml")
+	err = os.MkdirAll(filepath.Dir(configPath), os.ModePerm)
+	if err != nil {
+		return err
+	}
+
 	data, err := yaml.Marshal(config)
 	if err != nil {
 		return err
