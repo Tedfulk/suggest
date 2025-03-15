@@ -98,7 +98,8 @@ Example:
   suggest -m llama3.3-70b-versatile Tell me a story
   suggest -t "Code Function" --vars "language=Python,task=sort a list"
   suggest -s "Programming Assistant" Write a function
-  suggest -e "What are design patterns?"`,
+  suggest -e "What are design patterns?"
+  suggest chat  # Start an interactive chat session`,
 	Args: cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {

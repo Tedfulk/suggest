@@ -33,6 +33,7 @@ type Config struct {
 	Model          string            `yaml:"model"`
 	ModelAliases   map[string]string `yaml:"model_aliases"`
 	Templates      []Template        `yaml:"templates"`
+	Username       string            `yaml:"username"`
 }
 
 type ModelResponse struct {
