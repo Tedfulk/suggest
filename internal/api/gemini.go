@@ -9,8 +9,7 @@ import (
 )
 
 const (
-	GeminiAPIEndpoint     = "https://generativelanguage.googleapis.com/v1beta/models"
-	GeminiChatEndpoint    = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
+	GeminiAPIEndpoint = "https://generativelanguage.googleapis.com/v1beta/models"
 )
 
 type GeminiClient struct {
@@ -39,6 +38,9 @@ func NewGeminiClient(apiKey string) *GeminiClient {
 }
 
 func (c *GeminiClient) CreateChatCompletion(req *ChatCompletionRequest) (*ChatCompletionResponse, error) {
+	// Create the endpoint URL using the model from the request
+	geminiChatEndpoint := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent", req.Model)
+
 	// Convert from generic request to Gemini-specific format
 	geminiReq := GeminiRequest{
 		Contents: make([]GeminiContent, len(req.Messages)),
@@ -68,7 +70,7 @@ func (c *GeminiClient) CreateChatCompletion(req *ChatCompletionRequest) (*ChatCo
 		return nil, fmt.Errorf("error marshaling request: %w", err)
 	}
 
-	url := fmt.Sprintf("%s?key=%s", GeminiChatEndpoint, c.APIKey)
+	url := fmt.Sprintf("%s?key=%s", geminiChatEndpoint, c.APIKey)
 	httpReq, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %w", err)
