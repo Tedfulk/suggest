@@ -19,6 +19,40 @@ go install github.com/tedfulk/suggest@latest
 
 ## Usage
 
+### Basic Usage
+
+Provide your prompt directly as arguments:
+
+```bash
+suggest "Tell me a joke about Go"
+suggest -m gpt-4 "Explain the difference between channels and mutexes"
+```
+
+### Using Piped Input
+
+You can pipe content (like file contents) directly into `suggest` to provide context. The arguments will then act as the specific prompt or question about the piped context.
+
+```bash
+# Pipe a file and ask a question about it
+cat main.go | suggest "Explain what this Go code does"
+
+# Pipe content and use a specific model and system prompt
+cat report.txt | suggest -m gemini-1.5-pro -s "Summarizer" "Provide a 5-bullet summary"
+
+# Pipe content without arguments (AI will try to infer the task)
+cat README.md | suggest
+```
+
+In Fish shell, you can combine multiple commands' output into the pipe using `begin...end`:
+
+```fish
+begin
+  echo 'My name is Teddy.'
+  echo '-- Context Separator --'
+  cat file.txt
+end | suggest "Summarize the file content after the separator. Also, what's my name?"
+```
+
 ### Interactive Chat Mode
 
 Start an interactive chat session with your preferred AI model:
@@ -177,7 +211,7 @@ Templates support variable substitution using square brackets:
 
 You can combine system prompts with templates:
 
-| Command                                                                                                                           | Description                                       |
-| --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| `suggest template select translate --vars "source=English,target=French,text=Hello world" --system "You are a helpful assistant"` | Use the template with variables and system prompt |
-| `suggest -s "Technical Writer" template select docs --vars "topic=API,format=markdown"`                                           | Use the template with variables and system prompt |
+| Command                                                                                                                           |
+| --------------------------------------------------------------------------------------------------------------------------------- |
+| `suggest template select translate --vars "source=English,target=French,text=Hello world" --system "You are a helpful assistant"` |
+| `suggest -s "Technical Writer" template select docs --vars "topic=API,format=markdown"`                                           |

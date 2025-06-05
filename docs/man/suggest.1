@@ -13,9 +13,15 @@ suggest \- AI-powered command-line assistant
 [\fIcommand\fR]
 [\fItext\fR]
 
+.B command | suggest
+[IOPTIONSR]
+[ItextR]
+
 .SH DESCRIPTION
 .B suggest
 is a command-line tool that provides AI-powered assistance using various language models. It supports multiple AI providers, template management, and customizable system prompts.
+
+Input can be provided directly as arguments, or text content can be piped into the command via standard input. When input is piped, any provided text arguments act as a prompt specifically addressing the piped content.
 
 .SH COMMANDS
 .TP
@@ -127,6 +133,10 @@ Using a specific model:
 .TP
 Using a template:
 .B suggest template select code \-\-vars "language=Python,task=sort a list"
+.TP
+Piping content:
+.B cat main.go | suggest "Explain this Go code"
+.B git diff | suggest -s "Code Reviewer" "Summarize the changes"
 .TP
 Setting up API keys:
 .B suggest keys openai

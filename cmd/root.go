@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -91,7 +92,7 @@ var rootCmd = &cobra.Command{
 	Use:   "suggest [message]",
 	Short: "Chat with AI models using Groq, OpenAI, Gemini, or Ollama",
 	Long: `A CLI tool for interacting with various AI models through Groq, OpenAI, Gemini, and Ollama APIs.
-Simply type your message after 'suggest' to start chatting.
+Simply type your message after 'suggest' to start chatting or pipe content into it.
 
 Example:
   suggest Tell me a joke about programming
@@ -100,16 +101,54 @@ Example:
   suggest -t "Code Function" --vars "language=Python,task=sort a list"
   suggest -s "Programming Assistant" Write a function
   suggest -e "What are design patterns?"
-  suggest chat  # Start an interactive chat session`,
+  suggest chat  # Start an interactive chat session
+  cat file.txt | suggest "Summarize this file"
+  cat code.py | suggest -s "Programming Assistant" "Review this Python code"`,
 	Args: cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			fmt.Println("Please provide a message. Use --help for more information.")
+		var message string
+		var pipedContent string
+		var argMessage string
+
+		// Check if data is being piped
+		stat, _ := os.Stdin.Stat()
+		isPiped := (stat.Mode() & os.ModeCharDevice) == 0
+
+		if isPiped {
+			bytes, err := io.ReadAll(os.Stdin)
+			if err != nil {
+				fmt.Println("Error reading from stdin:", err)
+				return
+			}
+			pipedContent = strings.TrimSpace(string(bytes))
+		}
+
+		if len(args) > 0 {
+			argMessage = strings.Join(args, " ")
+		}
+
+		// Determine the final message based on input sources
+		if pipedContent != "" && argMessage != "" {
+			// Combine piped content and arguments
+			message = fmt.Sprintf("Context provided via pipe:\n---\n%s\n---\n\nUser query based on arguments:\n%s", pipedContent, argMessage)
+		} else if pipedContent != "" {
+			// Use only piped content
+			message = pipedContent
+		} else if argMessage != "" {
+			// Use only arguments
+			message = argMessage
+		} else {
+			// No input provided
+			fmt.Println("Please provide a message via arguments or pipe content. Use --help for more information.")
 			return
 		}
 
-		message := strings.Join(args, " ")
-		
+		// If message is effectively empty after processing, exit.
+		if strings.TrimSpace(message) == "" {
+			fmt.Println("Received empty or whitespace-only input.")
+			return
+		}
+
 		cfg, err := config.LoadConfig()
 		if err != nil {
 			fmt.Println("Error loading config:", err)
