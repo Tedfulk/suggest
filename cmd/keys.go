@@ -27,7 +27,7 @@ func maskKey(key string) string {
 
 var keysCmd = &cobra.Command{
 	Use:   "keys [provider]",
-	Short: "Manage API keys for OpenAI, Groq, Gemini, and Tavily",
+	Short: "Manage API keys for OpenAI, Groq, Gemini, Tavily, and Hume",
 	Long: `Manage API keys for various AI services.
 	
 Example:
@@ -35,6 +35,7 @@ Example:
   suggest keys groq       - Set Groq API key
   suggest keys gemini     - Set Gemini API key
   suggest keys tavily     - Set Tavily API key
+  suggest keys hume       - Set Hume API key
   suggest keys            - Show current keys`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg, err := config.LoadConfig()
@@ -48,6 +49,7 @@ Example:
 			fmt.Printf("Groq API key: %s\n", maskKey(cfg.GroqAPIKey))
 			fmt.Printf("Gemini API key: %s\n", maskKey(cfg.GeminiAPIKey))
 			fmt.Printf("Tavily API key: %s\n", maskKey(cfg.TavilyAPIKey))
+			fmt.Printf("Hume API key: %s\n", maskKey(cfg.HumeAPIKey))
 			fmt.Printf("Ollama Host: %s\n", cfg.OllamaHost)
 			return
 		}
@@ -131,6 +133,20 @@ Example:
 				fmt.Println("Tavily API key updated")
 			}
 
+		case "hume":
+			fmt.Print("Hume API Key: ")
+			var key string
+			fmt.Scanln(&key)
+			if key != "" {
+				cfg.HumeAPIKey = key
+				err = config.SaveConfig(cfg)
+				if err != nil {
+					fmt.Println("Error saving config:", err)
+					return
+				}
+				fmt.Println("Hume API key updated")
+			}
+
 		case "ollama":
 			fmt.Print("Ollama Host (default: http://localhost:11434): ")
 			var host string
@@ -146,7 +162,7 @@ Example:
 			}
 
 		default:
-			fmt.Printf("Unknown provider '%s'. Use 'openai', 'groq', 'gemini', or 'tavily'\n", provider)
+			fmt.Printf("Unknown provider '%s'. Use 'openai', 'groq', 'gemini', 'tavily', or 'hume'\n", provider)
 		}
 	},
 }

@@ -45,6 +45,21 @@ Manage API keys for providers
 .TP
 .B suggest alias
 Manage model aliases
+.TP
+.B suggest tts [text]
+Convert text to speech using TTS services. On macOS, uses built-in say command. On Linux/other systems, uses Groq TTS API (requires Groq API key). Processes input through AI model first, then speaks the AI's response.
+.TP
+.B suggest tts \-\-speed \fIrate\fR [text]
+Convert text to speech with specified rate (words per minute, macOS only).
+.TP
+.B suggest tts \-\-voice \fIvoice\fR [text]
+Convert text to speech with specified voice (non-macOS only).
+.TP
+.B suggest tts \-\-use-groq [text]
+Force Groq TTS API usage (any platform, requires Groq API key).
+.TP
+.B suggest tts \-\-use-hume [text]
+Force Hume TTS API usage (any platform, requires Hume API key).
 
 .SH SYSTEM COMMANDS
 .TP
@@ -86,6 +101,9 @@ Set Groq API key
 Set Gemini API key
 .TP
 .B suggest keys ollama
+.TP
+.B suggest keys hume
+Set Hume API key
 Set Ollama host (defaults to http://localhost:11434)
 .TP
 .B suggest keys
@@ -116,6 +134,15 @@ Use a template
 .B \-s, \-\-system
 Use a specific system prompt
 .TP
+.B \-r, \-\-speed
+Speech rate for TTS command (words per minute, macOS only)
+.TP
+.B \-v, \-\-voice
+Voice name for TTS command (non-macOS only)
+.TP
+.B \-\-use-groq
+Force Groq TTS API usage (any platform)
+.TP
 .B \-h, \-\-help
 Show help message
 
@@ -137,6 +164,14 @@ Using a template:
 Piping content:
 .B cat main.go | suggest "Explain this Go code"
 .B git diff | suggest -s "Code Reviewer" "Summarize the changes"
+.TP
+Text-to-speech:
+.B suggest tts "Explain how Bitcoin mining works"
+.B suggest tts \-\-speed 200 "What is the difference between proof of work and proof of stake?"
+.B suggest tts \-\-voice Fritz-PlayAI "How do smart contracts function on Ethereum?"
+.B suggest tts \-\-use-groq \-\-voice Mikail-PlayAI "Why are transaction fees important in cryptocurrencies?"
+.B suggest tts \-\-use-hume \-\-voice "Booming American Narrator" "How do smart contracts function on Ethereum?"
+.B echo "What is a blockchain fork?" | suggest tts
 .TP
 Setting up API keys:
 .B suggest keys openai

@@ -27,6 +27,7 @@ type Config struct {
 	GroqAPIKey     string            `yaml:"groq_api_key"`
 	GeminiAPIKey   string            `yaml:"gemini_api_key"`
 	TavilyAPIKey   string            `yaml:"tavily_api_key"`
+	HumeAPIKey     string            `yaml:"hume_api_key"`
 	OllamaHost     string            `yaml:"ollama_host"`
 	SystemPrompt   string            `yaml:"system_prompt"`
 	SystemPrompts  []SystemPrompt    `yaml:"system_prompts"`

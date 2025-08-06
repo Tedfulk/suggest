@@ -71,18 +71,44 @@ To exit the chat session, type 'bye', 'stop', 'end', or press Ctrl+C.
 suggest username  # Set your username for chat sessions
 ```
 
+### Text-to-Speech (TTS)
+
+Convert text to speech using various TTS services. On macOS, uses the built-in `say` command by default. On Linux and other systems, uses Groq TTS API (requires Groq API key). Also supports Hume TTS for high-quality voice synthesis.
+
+```bash
+suggest tts "Explain how Bitcoin mining works"
+suggest tts --speed 200 "What is the difference between proof of work and proof of stake?"  # Faster speech (macOS only)
+suggest tts --voice Fritz-PlayAI "How do smart contracts function on Ethereum?"
+suggest tts --use-groq --voice Mikail-PlayAI 'Why are transaction fees important in cryptocurrencies?'
+suggest tts --use-hume --voice "Booming American Narrator" "How do smart contracts function on Ethereum?"
+suggest tts --voice list                       # List available voices (non-macOS)
+echo "What is a blockchain fork?" | suggest tts
+```
+
+**Note:** 
+- **macOS**: Uses built-in `say` command (no setup required)
+- **Linux/Other**: Requires Groq API key
+  - Set Groq API key: `suggest keys groq`
+  - Available Groq voices: Fritz-PlayAI, Celeste-PlayAI, Atlas-PlayAI, and 16 others
+  - List voices: `suggest tts --voice list`
+- **Testing**: Use `--use-groq` to test Groq TTS on any platform
+- **Hume TTS**: High-quality voice synthesis with customizable voice descriptions
+  - Set Hume API key: `suggest keys hume`
+  - Use `--use-hume` to force Hume TTS on any platform
+  - Voice descriptions allow for detailed voice customization
+
 ### Enhance Prompts
 
 The `suggest` CLI provides two ways to enhance your coding-related prompts for better results:
 
 1. Using the `-e` flag:
 ```bash
-suggest -e "How do I use generics?"  # Enhances the prompt before processing
+suggest -e "How do I use generics in Typescript?"  # Enhances the prompt before processing
 ```
 
 2. Using the enhance command:
 ```bash
-suggest enhance "How do I use generics?"  # Same as above but as a separate command
+suggest enhance "How do I use generics in Typescript?"  # Same as above but as a separate command
 ```
 
 Both methods will:
