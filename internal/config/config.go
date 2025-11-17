@@ -134,7 +134,11 @@ func DetermineModelProvider(model string, config *Config) string {
 	if strings.HasPrefix(model, "gpt-") {
 		return "openai"
 	}
-	if strings.HasPrefix(model, "mixtral-") || strings.HasPrefix(model, "llama-") {
+	if strings.HasPrefix(model, "mixtral-") || 
+		strings.HasPrefix(model, "llama-") ||
+		strings.HasPrefix(model, "moonshotai/") ||
+		strings.HasPrefix(model, "qwen/") ||
+		strings.HasPrefix(model, "groq/") {
 		return "groq"
 	}
 	if strings.HasPrefix(model, "gemini-") {
